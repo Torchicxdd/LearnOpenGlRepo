@@ -1,0 +1,15 @@
+{
+  "name": "graphics-learning",
+  "version-string": "0.1.0",
+  "dependencies": [
+    "glfw3",
+    "glad"
+  ],
+  "overrides": [
+    {
+      "name": "glad",
+      "version": "0.1.36"
+    }
+  ],
+  "builtin-baseline": "d567b667adba0e72c5c3931ddbe745b66aa34b73"
+}

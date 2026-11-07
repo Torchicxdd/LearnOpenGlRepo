@@ -1,0 +1,6 @@
+vcpkg_installed/
+build/
+bin/
+.vscode/
+.cache/
+obj/

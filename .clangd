@@ -1,0 +1,11 @@
+CompileFlags:
+  CompilationDatabase: build/debug
+  Add:
+    - -I../../include
+
+Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+
+Completion:
+  HeaderInsertion: Never

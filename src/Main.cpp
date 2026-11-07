@@ -86,10 +86,10 @@ int main()
 		0.66f, -0.33f, 0.0f
 	};
 
-	// unsigned int indices[] = {
-	// 	0, 1, 2,
-	// 	2, 3, 4
-	// };
+	unsigned int indices[] = {
+		0, 1, 2,
+		2, 3, 4
+	};
 
 	// Create and bind buffers with data
     unsigned int EBO;
@@ -98,33 +98,27 @@ int main()
     glGenBuffers(2, VBOs);
 	glGenBuffers(1, &EBO);
 
+	// Bind EBO
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
     glBindVertexArray(VAOs[0]);
 	// Bind VBO
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[0]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesTriangleOne), verticesTriangleOne, GL_STATIC_DRAW);
-
-	// Bind EBO
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	// glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
-	// Make sure to unbind VAO FIRST as it keeps track of EBO binds
-    // glBindBuffer(GL_ARRAY_BUFFER, 0);
-    // glBindVertexArray(0); 
-	// glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 
 	glBindVertexArray(VAOs[1]);
-
     glBindBuffer(GL_ARRAY_BUFFER, VBOs[1]);
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesTriangleTwo), verticesTriangleTwo, GL_STATIC_DRAW);
-
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
-
+	// Make sure to unbind VAO FIRST as it keeps track of EBO binds
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0); 
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+
 	// Wireframe mode if wanted
 	// glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 

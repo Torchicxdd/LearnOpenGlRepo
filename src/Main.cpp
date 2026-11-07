@@ -6,6 +6,7 @@
 #include <sstream>
 #include <filesystem>
 #include <string>
+#include <graphics_learning/shader.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void processInput(GLFWwindow *window);
@@ -44,31 +45,13 @@ int main()
 
 
     // vertex shader
-    unsigned int vertexShader = glCreateShader(GL_VERTEX_SHADER);
-    unsigned int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-    unsigned int shaderProgram = glCreateProgram();
-	std::string vertexSourceString = loadShaderSource("assets/shaders/vertex_shader.glsl");
-	std::string fragmentSourceString = loadShaderSource("assets/shaders/fragment_shader.glsl");
-	const char* vertexSource = vertexSourceString.c_str();
-	const char* fragmentSource = fragmentSourceString.c_str();
-
-
-    glShaderSource(vertexShader, 1, &vertexSource, nullptr);
-    glCompileShader(vertexShader);
-    // fragment shader
-    glShaderSource(fragmentShader, 1, &fragmentSource, nullptr);
-    glCompileShader(fragmentShader);
-    // link shaders
-    glAttachShader(shaderProgram, vertexShader);
-    glAttachShader(shaderProgram, fragmentShader);
-    glLinkProgram(shaderProgram);
-    glDeleteShader(vertexShader);
-    glDeleteShader(fragmentShader);
+    Shader shader("assets/shaders/vertex_shader.glsl", "assets/shaders/fragment_shader.glsl");
 
     float verticesTriangleOne[] = {
-		0.5f, -0.5f, 0.0f,
-		-0.5f, -0.5f, 0.0f,
-		0.0f, 0.5f, 0.0f,
+		// positions                   // colours
+		0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+		-0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,
+		0.0f, 0.5f, 0.0f, 0.0f, 0.0f, 1.0f
     }; 
 
 	unsigned int indices[] = {
@@ -89,8 +72,10 @@ int main()
     glBufferData(GL_ARRAY_BUFFER, sizeof(verticesTriangleOne), verticesTriangleOne, GL_STATIC_DRAW);
 
 	// Configure vertex attributes
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
     glEnableVertexAttribArray(0);
+	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
+    glEnableVertexAttribArray(1);
 
 	// Bind EBO
 	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
@@ -115,21 +100,13 @@ int main()
         glClear(GL_COLOR_BUFFER_BIT);
 
 		// Activate the shader
-        glUseProgram(shaderProgram);
+		shader.use();
 
-		float timeValue = glfwGetTime();
-		std::cout << sin(timeValue) << std::endl;
-		float greenValue = (sin(timeValue) / 2.0f) + 0.5f;
-		int vertexColourLocation = glGetUniformLocation(shaderProgram, "ourColour");
-		glUniform4f(vertexColourLocation, 0.0f, greenValue, 0.0f, 1.0f);
+		shader.setFloat("ourColour", 1.0f);
 
 		// seeing as we only have a single VAO there's no need to bind it every time, but we'll do so to keep things a bit more organized
 		// binding the VAO also binds the EBO because the EBO reference is stored in the VAO
         glBindVertexArray(VAO); 
-        glDrawArrays(GL_TRIANGLES, 0, 3);
-
-		glUseProgram(shaderProgram);
-		glBindVertexArray(VAO);
         glDrawArrays(GL_TRIANGLES, 0, 3);
 
         glBindVertexArray(0); // no need to unbind it every time 
@@ -141,7 +118,7 @@ int main()
     glDeleteVertexArrays(1, &VAO);
     glDeleteBuffers(1, &VBO);
 	glDeleteBuffers(1, &EBO);
-    glDeleteProgram(shaderProgram);
+	shader.deleteShader();
 
     glfwTerminate();
     return 0;
@@ -158,15 +135,4 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height)
     glViewport(0, 0, width, height);
 }
 
-static std::string loadShaderSource(const std::string& filePath) {
-	std::ifstream fileStream(filePath);
 
-	if (!fileStream.is_open()) {
-		std::cerr << "Failed to open: " << filePath << '\n';
-		return "";
-	}
-
-	std::stringstream buffer;
-	buffer << fileStream.rdbuf();
-	return buffer.str();
-}

@@ -1,6 +1,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include <algorithm>
 #include <iostream>
 #include <string>
 #include <graphics_learning/shader.h>
@@ -9,12 +10,14 @@
 #include <stb_image.h>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow *window, Shader shader);
 static std::string loadShaderSource(const std::string& filePath);
 
 // settings
 const unsigned int SCR_WIDTH = 800;
 const unsigned int SCR_HEIGHT = 600;
+
+float textureVisibility = 0.5f;
 
 int main()
 {
@@ -101,8 +104,8 @@ int main()
 
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// load texture
 	int width, height, nrChannels;
@@ -119,10 +122,10 @@ int main()
 
 	glBindTexture(GL_TEXTURE_2D, textures[1]);
 
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
 	// load texture
 	data = stbi_load("assets/textures/awesomeface.png", &width, &height, &nrChannels, 0);
@@ -143,7 +146,7 @@ int main()
     while (!glfwWindowShouldClose(window))
     {
         // input
-        processInput(window);
+        processInput(window, shader);
 
         // render
         glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
@@ -176,10 +179,21 @@ int main()
     return 0;
 }
 
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow *window, Shader shader)
 {
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+		textureVisibility = std::clamp(textureVisibility + 0.02f, 0.0f, 1.0f);
+		shader.setFloat("textureVisibility", textureVisibility);
+	}
+
+	if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+		textureVisibility = std::clamp(textureVisibility - 0.02f, 0.0f, 1.0f);
+		shader.setFloat("textureVisibility", textureVisibility);
+	}
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
